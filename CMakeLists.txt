@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.0)
 
 project(teslarc)
 
+if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
+    message(SEND_ERROR "In-source builds are not allowed. Please create a separate build directory.")
+endif()
+
 if(NOT CMAKE_BUILD_TYPE)
     set(
         CMAKE_BUILD_TYPE "Release"
