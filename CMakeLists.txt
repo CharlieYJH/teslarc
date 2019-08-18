@@ -14,5 +14,7 @@ if(NOT CMAKE_BUILD_TYPE)
     )
 endif()
 
+message("Running build type: ${CMAKE_BUILD_TYPE}")
+
 add_subdirectory("third-party")
 add_subdirectory("src")
