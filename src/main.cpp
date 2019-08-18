@@ -1,4 +1,5 @@
 #include "teslarc.h"
+#include "util/log.h"
 
 int main(int argc, char const *argv[])
 {

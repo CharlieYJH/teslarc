@@ -7,7 +7,7 @@ namespace teslarc {
 
 int run_loop()
 {
-    LOGGER(INFO, "Running loop\n");
+    LOGGER(DEBUG, "Running loop");
     return 0;
 };
 
