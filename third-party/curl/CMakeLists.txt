@@ -1,9 +1,11 @@
 set(EXTERN_CURL_VERSION 7.62.0)
+
 set(
     EXTERN_CURL_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/curl-${EXTERN_CURL_VERSION}/include"
     CACHE STRING "curl include directory"
     FORCE
 )
+
 set(
     EXTERN_CURL_LIBRARY_DIR "${CMAKE_CURRENT_BINARY_DIR}/curl-${EXTERN_CURL_VERSION}/lib/.libs/libcurl.a"
     CACHE STRING "curl static library"

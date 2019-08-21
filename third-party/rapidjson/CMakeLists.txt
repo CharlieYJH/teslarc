@@ -1,4 +1,5 @@
 set(EXTERN_RAPIDJSON_VERSION 1.1.0)
+
 set(
     EXTERN_RAPIDJSON_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/rapidjson-${EXTERN_RAPIDJSON_VERSION}/include"
     CACHE STRING "rapidjson include directory"
