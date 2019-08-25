@@ -36,3 +36,4 @@ build
 
 # Miscellaneous
 *.swp
+session.vim

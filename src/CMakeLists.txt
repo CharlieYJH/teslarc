@@ -8,6 +8,8 @@ add_compile_options(
 set(
     TESLARC_SRC ./main.cpp
                 ./teslarc.cpp
+                ./charge.cpp
+                ./util/user_prompt.cpp
 )
 
 add_executable(${EXE_NAME} ${TESLARC_SRC})

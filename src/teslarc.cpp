@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "teslarc.h"
+#include "charge.h"
 #include "util/log.h"
 
 namespace teslarc {
@@ -13,7 +14,16 @@ int run_loop()
 
 int run_once(int argc, const char *argv[])
 {
-    LOGGER(DEBUG, "Running once");
+    const char *cmd = argv[1];
+
+#define CHECK_SUBROUTINE(cmd, subroutine) strcmp(cmd, subroutine) == 0
+
+    if (CHECK_SUBROUTINE(cmd, "charge")) {
+        return run_charge(argc, argv);
+    }
+
+#undef CHECK_SUBROUTINE
+
     return 0;
 }
 
