@@ -36,7 +36,7 @@ void prompt_user_input(const std::string &msg, std::string *var, enum prompt_set
 std::string prompt_username()
 {
     std::string name;
-    prompt_user_input("Enter your Tesla username: ", &name, PROMPT_SETTINGS_SHOW_INPUT);
+    prompt_user_input("Enter your Tesla email: ", &name, PROMPT_SETTINGS_SHOW_INPUT);
     return name;
 }
 

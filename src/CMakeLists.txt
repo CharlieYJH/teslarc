@@ -10,6 +10,7 @@ set(
                 ./teslarc.cpp
                 ./charge.cpp
                 ./util/user_prompt.cpp
+                ./util/oauth.cpp
 )
 
 add_executable(${EXE_NAME} ${TESLARC_SRC})
