@@ -7,7 +7,7 @@ add_compile_options(
 # Project source files
 set(
     TESLARC_SRC ./main.cpp
-                ./teslarc.cpp
+                ./session.cpp
                 ./charge.cpp
                 ./util/user_prompt.cpp
                 ./util/oauth.cpp
