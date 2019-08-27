@@ -58,6 +58,7 @@ bool oauth_get(const std::string &url, const std::string &token, std::string *da
 {
     CURL *curl = curl_easy_init();
     CURLcode res;
+    data->clear();
 
     if (!curl) {
         return false;
@@ -97,6 +98,7 @@ bool oauth_post(const std::string &url, const std::string &token, const std::str
     CURL *curl = curl_easy_init();
     CURLcode res;
     struct curl_slist *slist = NULL;
+    data->clear();
 
     if (!curl) {
         return false;
