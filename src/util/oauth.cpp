@@ -143,7 +143,7 @@ namespace internal {
 
 size_t oauth_curl_callback(char *data, size_t size, size_t nmemb, void *userdata)
 {
-    static_cast<std::string *>(userdata)->assign(data, size * nmemb);
+    static_cast<std::string *>(userdata)->append(data, size * nmemb);
     return size * nmemb;
 }
 
