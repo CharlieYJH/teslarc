@@ -37,3 +37,4 @@ build
 # Miscellaneous
 *.swp
 session.vim
+tags
