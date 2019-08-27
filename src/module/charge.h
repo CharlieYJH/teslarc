@@ -4,9 +4,11 @@
 #include "session.h"
 
 namespace teslarc {
+namespace module {
 
-int run_charge(teslarc::Session *session);
+int charge(teslarc::Session *session, int argc, const char *argv[]);
 
+} // namespace app
 } // namespace teslarc
 
 #endif

@@ -8,13 +8,15 @@ add_compile_options(
 set(
     TESLARC_SRC ./main.cpp
                 ./session.cpp
-                ./charge.cpp
+                ./application.cpp
+                ./module/charge.cpp
                 ./util/user_prompt.cpp
                 ./util/oauth.cpp
 )
 
 add_executable(${EXE_NAME} ${TESLARC_SRC})
 target_compile_features(${EXE_NAME} PUBLIC cxx_std_11)
+target_include_directories(${EXE_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${EXE_NAME} third_party)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

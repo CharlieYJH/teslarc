@@ -1,6 +1,8 @@
 #include <termios.h>
 #include <unistd.h>
+#include <stdio.h>
 #include <iostream>
+#include <string>
 
 #include "user_prompt.h"
 
@@ -19,7 +21,7 @@ using namespace internal;
 
 void prompt_user_input(const std::string &msg, std::string *var, enum prompt_settings setting)
 {
-    std::cout << msg;
+    printf("%s", msg.c_str());
 
     if (setting == PROMPT_SETTINGS_HIDE_INPUT) {
         hide_terminal_input();
@@ -29,7 +31,7 @@ void prompt_user_input(const std::string &msg, std::string *var, enum prompt_set
 
     if (setting == PROMPT_SETTINGS_HIDE_INPUT) {
         show_terminal_input();
-        std::cout << std::endl;
+        printf("\n");
     }
 }
 
