@@ -25,7 +25,7 @@ void prompt_user_input(const std::string &msg, std::string *var, enum prompt_set
         hide_terminal_input();
     }
 
-    std::cin >> *var;
+    getline(std::cin, *var);
 
     if (setting == PROMPT_SETTINGS_HIDE_INPUT) {
         show_terminal_input();
