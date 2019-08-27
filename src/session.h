@@ -5,7 +5,7 @@
 
 namespace teslarc {
 
-class SessionInfo
+class Session
 {
     std::string email_;
     std::string password_;

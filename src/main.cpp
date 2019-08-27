@@ -4,7 +4,7 @@
 
 int main(int argc, char const *argv[])
 {
-    teslarc::SessionInfo session;
+    teslarc::Session session;
 
     curl_global_init(CURL_GLOBAL_ALL);
 

@@ -6,17 +6,17 @@
 
 namespace teslarc {
 
-void SessionInfo::query_email()
+void Session::query_email()
 {
     email_ = util::prompt_username();
 }
 
-void SessionInfo::query_password()
+void Session::query_password()
 {
     password_ = util::prompt_password();
 }
 
-bool SessionInfo::query_access_token()
+bool Session::query_access_token()
 {
     if (email_.empty()) {
         query_email();
@@ -34,7 +34,7 @@ bool SessionInfo::query_access_token()
     return true;
 }
 
-bool SessionInfo::query_vehicles()
+bool Session::query_vehicles()
 {
     std::string data;
 

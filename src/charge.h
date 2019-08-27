@@ -5,7 +5,7 @@
 
 namespace teslarc {
 
-int run_charge(teslarc::SessionInfo *session);
+int run_charge(teslarc::Session *session);
 
 } // namespace teslarc
 
