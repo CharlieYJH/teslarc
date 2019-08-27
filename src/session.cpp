@@ -52,7 +52,7 @@ bool Session::query_vehicles()
         return false;
     }
 
-    if (!util::oauth_do_get_request(TESLA_API_URL_BASE TESLA_API_URL_VEHICLE, access_token_, &data)) {
+    if (!util::oauth_get(TESLA_API_URL_BASE TESLA_API_URL_VEHICLE, access_token_, &data)) {
         LOGGER(ERROR, "Failed to obtain vehicle information");
         return false;
     }
@@ -106,7 +106,7 @@ bool Session::query_current_vehicle()
     printf("\n");
 
     if (vehicles_.Size() == 1 && first) {
-        printf("Choosing %s by default\n", first);
+        printf("Choosing %s by default\n\n", first);
         vidx_ = 0;
         return true;
     }
@@ -138,6 +138,52 @@ bool Session::query_current_vehicle()
     return true;
 }
 
+bool Session::wake() const
+{
+    std::string id(this->id());
+
+    if (id.empty()) {
+        return false;
+    }
+
+    std::string data;
+    std::string url(TESLA_API_URL_BASE TESLA_API_URL_VEHICLE "/" + id + "/wake_up");
+
+    if (!util::oauth_post(url, access_token(), {}, &data)) {
+        LOGGER(ERROR, "Failed to wake up vehicle");
+        return false;
+    }
+
+    rapidjson::Document doc;
+    doc.Parse(data.c_str());
+
+    if (doc.HasParseError()) {
+        LOGGER(ERROR, "%s", GetParseError_En(doc.GetParseError()));
+        return false;
+    }
+
+    rapidjson::Value::ConstMemberIterator response = doc.FindMember("response");
+
+    if (response == doc.MemberEnd() || !response->value.IsObject()) {
+        LOGGER(ERROR, "Invalid wake response received");
+        return false;
+    }
+
+    rapidjson::Value::ConstMemberIterator res_id = response->value.GetObject().FindMember("id_s");
+
+    if (res_id == response->value.GetObject().MemberEnd() || !res_id->value.IsString()) {
+        LOGGER(ERROR, "Received a wake response but the id field is invalid");
+        return false;
+    }
+
+    if (strcmp(res_id->value.GetString(), id.c_str()) != 0) {
+        LOGGER(ERROR, "The id in the wake response does not match the query id");
+        return false;
+    }
+
+    return true;
+}
+
 const std::string &Session::email() const
 {
     return email_;
@@ -153,20 +199,21 @@ const rapidjson::Document &Session::vehicles() const
     return vehicles_;
 }
 
-uint64_t Session::vehicle_id() const
+const std::string Session::id() const
 {
     if (!vehicles_.IsArray() || vidx_ >= vehicles_.Size()) {
-        return 0;
+        return {};
     }
 
     const rapidjson::Value &vehicle = vehicles_.GetArray()[vidx_];
-    rapidjson::Value::ConstMemberIterator vehicle_id = vehicle.FindMember("vehicle_id");
+    rapidjson::Value::ConstMemberIterator id = vehicle.FindMember("id_s");
 
-    if (vehicle_id == vehicle.MemberEnd() || !vehicle_id->value.IsInt()) {
-        return 0;
+    if (id == vehicle.MemberEnd() || !id->value.IsString()) {
+        LOGGER(ERROR, "Unable to find id field in JSON list");
+        return {};
     }
 
-    return vehicle_id->value.GetInt();
+    return id->value.GetString();
 }
 
 } // namespace teslarc

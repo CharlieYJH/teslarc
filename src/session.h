@@ -28,7 +28,9 @@ class Session
     const std::string &email() const;
     const std::string &access_token() const;
     const rapidjson::Document &vehicles() const;
-    uint64_t vehicle_id() const;
+    const std::string id() const;
+
+    bool wake() const;
 };
 
 } // namespace teslarc

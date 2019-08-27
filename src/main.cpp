@@ -21,7 +21,7 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    teslarc::run_once(&session, argc, argv);
+    teslarc::run_once(&session, argc - 1, argv + 1);
 
     curl_global_cleanup();
 

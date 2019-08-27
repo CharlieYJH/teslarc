@@ -19,13 +19,6 @@ using namespace internal;
 
 bool oauth_get_access_token(const std::string &email, const std::string &password, std::string *token)
 {
-    CURL *curl = curl_easy_init();
-    CURLcode res;
-
-    if (!curl) {
-        return false;
-    }
-
     std::string outdata;
     std::string fields(
         "grant_type=password"
@@ -35,21 +28,8 @@ bool oauth_get_access_token(const std::string &email, const std::string &passwor
         "&password=" + password
     );
 
-    curl_easy_setopt(curl, CURLOPT_URL, TESLA_API_URL_BASE TESLA_API_URL_TOKEN);
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, fields.c_str());
-    curl_easy_setopt(curl, CURLOPT_USERAGENT, OAUTH_DUMMY_USERAGENT);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &outdata);
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, oauth_curl_callback);
-
-    if ((res = curl_easy_perform(curl)) != CURLE_OK) {
-        LOGGER(ERROR, "%s", curl_easy_strerror(res));
-    } else {
-        LOGGER(DEBUG, "Received: %s", outdata.c_str());
-    }
-
-    curl_easy_cleanup(curl);
-
-    if (res != CURLE_OK) {
+    if (!oauth_post(TESLA_API_URL_BASE TESLA_API_URL_TOKEN, {}, fields, &outdata)) {
+        LOGGER(ERROR, "Failed to retrieve access_token");
         return false;
     }
 
@@ -71,10 +51,10 @@ bool oauth_get_access_token(const std::string &email, const std::string &passwor
     *token = access_token->value.GetString();
     LOGGER(DEBUG, "Retrieved access_token: %s", access_token->value.GetString());
 
-    return res == CURLE_OK;
+    return true;
 }
 
-bool oauth_do_get_request(const std::string &url, const std::string &token, std::string *data)
+bool oauth_get(const std::string &url, const std::string &token, std::string *data)
 {
     CURL *curl = curl_easy_init();
     CURLcode res;
@@ -97,6 +77,53 @@ bool oauth_do_get_request(const std::string &url, const std::string &token, std:
     curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, data);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, oauth_curl_callback);
+
+    LOGGER(DEBUG, "GET %s", url.c_str());
+
+    if ((res = curl_easy_perform(curl)) != CURLE_OK) {
+        LOGGER(ERROR, "%s", curl_easy_strerror(res));
+    } else {
+        LOGGER(DEBUG, "Received: %s", data->c_str());
+    }
+
+    curl_slist_free_all(slist);
+    curl_easy_cleanup(curl);
+
+    return res == CURLE_OK;
+}
+
+bool oauth_post(const std::string &url, const std::string &token, const std::string &fields, std::string *data)
+{
+    CURL *curl = curl_easy_init();
+    CURLcode res;
+    struct curl_slist *slist = NULL;
+
+    if (!curl) {
+        return false;
+    }
+
+    if (!token.empty()) {
+        std::string header("Authorization: Bearer " + token);
+        slist = curl_slist_append(slist, header.c_str());
+
+        if (!slist) {
+            LOGGER(ERROR, "Failed to append Authorization header");
+            curl_easy_cleanup(curl);
+            return false;
+        }
+    }
+
+    curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, fields.c_str());
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, OAUTH_DUMMY_USERAGENT);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, data);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, oauth_curl_callback);
+
+    if (slist) {
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
+    }
+
+    LOGGER(DEBUG, "POST %s", url.c_str());
 
     if ((res = curl_easy_perform(curl)) != CURLE_OK) {
         LOGGER(ERROR, "%s", curl_easy_strerror(res));

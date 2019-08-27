@@ -13,7 +13,7 @@ using namespace internal;
 
 int run_once(teslarc::Session *session, int argc, const char *argv[])
 {
-    const char *cmd = argv[1];
+    const char *cmd = argv[0];
 
     if (!check_valid_command(cmd)) {
         fprintf(stderr, "Unknown command: %s\n", cmd);
