@@ -52,7 +52,7 @@ bool Session::query_vehicles()
         return false;
     }
 
-    if (!util::oauth_get(TESLA_API_URL_BASE TESLA_API_URL_VEHICLE, access_token_, &data)) {
+    if (!util::oauth_get(TESLA_API_URL_VEHICLE, access_token_, &data)) {
         LOGGER(ERROR, "Failed to obtain vehicle information");
         return false;
     }
@@ -149,7 +149,7 @@ bool Session::wake() const
     }
 
     std::string data;
-    std::string url(TESLA_API_URL_BASE TESLA_API_URL_VEHICLE "/" + id + "/wake_up");
+    std::string url(TESLA_API_URL_VEHICLE "/" + id + "/wake_up");
 
     if (!util::oauth_post(url, access_token(), {}, &data)) {
         LOGGER(ERROR, "Failed to wake up vehicle");

@@ -28,7 +28,7 @@ bool oauth_get_access_token(const std::string &email, const std::string &passwor
         "&password=" + password
     );
 
-    if (!oauth_post(TESLA_API_URL_BASE TESLA_API_URL_TOKEN, {}, fields, &outdata)) {
+    if (!oauth_post(TESLA_API_URL_TOKEN, {}, fields, &outdata)) {
         LOGGER(ERROR, "Failed to retrieve access_token");
         return false;
     }

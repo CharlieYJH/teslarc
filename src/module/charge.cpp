@@ -62,10 +62,11 @@ bool show_charge_data(teslarc::Session *session)
     std::string id(session->id());
 
     if (id.empty()) {
+        CHARGE_LOG(ERROR, "No vehicle selected");
         return false;
     }
 
-    std::string url(TESLA_API_URL_BASE TESLA_API_URL_VEHICLE "/" + id + "/data_request/charge_state");
+    std::string url(TESLA_API_URL_VEHICLE "/" + id + "/data_request/charge_state");
     std::string data;
 
     rapidjson::Document doc;
@@ -113,6 +114,13 @@ bool set_charge_limit(teslarc::Session *session, int argc, const char *argv[])
 {
     if (argc < 1) {
         CHARGE_LOG(ERROR, "Missing charge percentage");
+        return false;
+    }
+
+    std::string id(session->id());
+
+    if (id.empty()) {
+        CHARGE_LOG(ERROR, "No vehicle selected");
         return false;
     }
 

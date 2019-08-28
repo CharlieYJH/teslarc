@@ -5,7 +5,7 @@
 #define TESLA_API_CLIENT_SECRET "c7257eb71a564034f9419ee651c7d0e5f7aa6bfbd18bafb5c5c033b093bb2fa3"
 
 #define TESLA_API_URL_BASE "https://owner-api.teslamotors.com"
-#define TESLA_API_URL_TOKEN "/oauth/token?grant_type=password"
-#define TESLA_API_URL_VEHICLE "/api/1/vehicles"
+#define TESLA_API_URL_TOKEN TESLA_API_URL_BASE "/oauth/token?grant_type=password"
+#define TESLA_API_URL_VEHICLE TESLA_API_URL_BASE "/api/1/vehicles"
 
 #endif
