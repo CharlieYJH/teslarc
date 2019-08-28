@@ -27,7 +27,7 @@ using namespace internal;
 int charge(teslarc::Session *session, int argc, const char *argv[])
 {
     if (argc < 1) {
-        fprintf(stderr, "[charge] Error: Missing command\n\n");
+        CHARGE_LOG(ERROR, "Missing command\n");
         print_help();
         return 1;
     }
