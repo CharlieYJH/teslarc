@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include "session.h"
 #include "teslarc_defs.h"
 #include "util/log.h"
@@ -180,6 +182,10 @@ bool Session::wake() const
         LOGGER(ERROR, "The id in the wake response does not match the query id");
         return false;
     }
+
+    // Sending another request immediately after wake causes
+    // the response to be null for some reason
+    sleep(1);
 
     return true;
 }
