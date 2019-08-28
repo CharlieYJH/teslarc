@@ -10,12 +10,15 @@
 #include "rapidjson/prettywriter.h"
 #include "rapidjson/stringbuffer.h"
 
+#define CHARGE_LOG(level, fmt, ...) MODULE_LOG(charge, level, fmt, ##__VA_ARGS__)
+
 namespace teslarc {
 namespace module {
 namespace internal {
 
 void print_help();
 bool show_charge_data(teslarc::Session *session);
+bool set_charge_limit(teslarc::Session *session, int argc, const char *argv[]);
 
 } // namespace internal
 
@@ -33,6 +36,8 @@ int charge(teslarc::Session *session, int argc, const char *argv[])
 
     if (strcmp(cmd, "show") == 0) {
         show_charge_data(session);
+    } else if (strcmp(cmd, "set") == 0) {
+        set_charge_limit(session, argc - 1, argv + 1);
     }
 
     return 0;
@@ -69,16 +74,17 @@ bool show_charge_data(teslarc::Session *session)
 
     for (int retries = 10; (response == doc.MemberEnd() || !response->value.IsObject()) && retries >= 0; --retries, sleep(1)) {
         printf("%s", retries == 10 ? "Waiting for response..." : ".");
+        fflush(stdout);
 
         if (!util::oauth_get(url, session->access_token(), &data)) {
-            LOGGER(ERROR, "Failed to retrieve charge information");
+            CHARGE_LOG(ERROR, "Failed to retrieve charge information");
             return false;
         }
 
         doc.Parse(data.c_str());
 
         if (doc.HasParseError()) {
-            LOGGER(ERROR, "%s", GetParseError_En(doc.GetParseError()));
+            CHARGE_LOG(ERROR, "%s", GetParseError_En(doc.GetParseError()));
             return false;
         }
 
@@ -86,7 +92,7 @@ bool show_charge_data(teslarc::Session *session)
     }
 
     if (response == doc.MemberEnd() || !response->value.IsObject()) {
-        LOGGER(ERROR, "Unable to get a response from the vehicle");
+        CHARGE_LOG(ERROR, "Unable to get a response from the vehicle");
         return false;
     }
 
@@ -95,9 +101,37 @@ bool show_charge_data(teslarc::Session *session)
     response->value.Accept(writer);
 
     printf("\n\n=======================================================\n");
-    printf("  Charge information:\n");
-    printf("=======================================================\n\n");
+    printf("  Charge Information:\n");
+    printf("-------------------------------------------------------\n");
     printf("%s\n", buffer.GetString());
+    printf("=======================================================\n\n");
+
+    return true;
+}
+
+bool set_charge_limit(teslarc::Session *session, int argc, const char *argv[])
+{
+    if (argc < 1) {
+        CHARGE_LOG(ERROR, "Missing charge percentage");
+        return false;
+    }
+
+    int percentage = 0;
+
+    try {
+        percentage = std::stoi(argv[0]);
+    } catch (const std::exception &e) {
+        CHARGE_LOG(ERROR, "Invalid charge percentage");
+        return false;
+    }
+
+    if (percentage < 0) {
+        CHARGE_LOG(INFO, "Percentage entered is under the minimum. Limiting to 0");
+        percentage = 0;
+    } else if (percentage > 100) {
+        CHARGE_LOG(INFO, "Percentage entered is over the maximum. Limiting to 100");
+        percentage = 100;
+    }
 
     return true;
 }
@@ -105,3 +139,5 @@ bool show_charge_data(teslarc::Session *session)
 } // namespace internal
 } // namespace module
 } // namespace teslarc
+
+#undef CHARGE_LOG

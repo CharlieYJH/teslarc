@@ -108,7 +108,7 @@ bool Session::query_current_vehicle()
     printf("=======================================================\n\n");
 
     if (vehicles_.Size() == 1 && first) {
-        printf("Choosing %s by default\n", first);
+        printf("%s chosen by default\n\n", first);
         vidx_ = 0;
         return true;
     }
@@ -120,10 +120,10 @@ bool Session::query_current_vehicle()
 
         try {
             idx = std::stoull(input);
-        } catch (std::invalid_argument) {
+        } catch (const std::invalid_argument &e) {
             fprintf(stderr, "Unknown input: %s\n", input.c_str());
             continue;
-        } catch (std::out_of_range) {
+        } catch (const std::out_of_range &e) {
             fprintf(stderr, "Given index is outside of the range representable by a 64-bit unsigned integer\n");
             continue;
         }
