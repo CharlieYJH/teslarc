@@ -31,7 +31,7 @@ int run_once(teslarc::Session *session, int argc, const char *argv[])
     }
 
     if (strcmp(cmd, "charge") == 0) {
-        teslarc::module::charge(session, argc, argv);
+        teslarc::module::charge(session, argc - 1, argv + 1);
     }
 
     return 0;

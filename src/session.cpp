@@ -1,5 +1,3 @@
-#include <unistd.h>
-
 #include "session.h"
 #include "teslarc_defs.h"
 #include "util/log.h"
@@ -88,7 +86,9 @@ bool Session::query_current_vehicle()
         return false;
     }
 
-    printf("\nVehicles for %s:\n", email_.c_str());
+    printf("\n=======================================================\n");
+    printf("  Vehicles for %s:\n", email_.c_str());
+    printf("-------------------------------------------------------\n");
 
     for (size_t i = 0; i < vehicles_.Size(); ++i) {
         const rapidjson::Value &entry = vehicles_.GetArray()[i];
@@ -102,13 +102,13 @@ bool Session::query_current_vehicle()
             first = vin->value.GetString();
         }
 
-        printf("  [%lu] %s\n", i, vin->value.GetString());
+        printf("    [%lu] %s\n", i, vin->value.GetString());
     }
 
-    printf("\n");
+    printf("=======================================================\n\n");
 
     if (vehicles_.Size() == 1 && first) {
-        printf("Choosing %s by default\n\n", first);
+        printf("Choosing %s by default\n", first);
         vidx_ = 0;
         return true;
     }
@@ -182,10 +182,6 @@ bool Session::wake() const
         LOGGER(ERROR, "The id in the wake response does not match the query id");
         return false;
     }
-
-    // Sending another request immediately after wake causes
-    // the response to be null for some reason
-    sleep(1);
 
     return true;
 }

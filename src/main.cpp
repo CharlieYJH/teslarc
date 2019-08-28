@@ -7,7 +7,7 @@ static void teslarc_print_help()
     printf("TeslaRC: Remote Tesla Controller Tool\n\n");
     printf("Usage: teslarc (command)\n\n");
     printf("Commands:\n");
-    printf("  charge (get | set <percentage>)\n");
+    printf("  charge (show | set <percentage>)\n");
 }
 
 int main(int argc, char const *argv[])
