@@ -60,12 +60,6 @@ bool show_charge_data(teslarc::Session *session)
     }
 
     std::string id(session->id());
-
-    if (id.empty()) {
-        CHARGE_LOG(ERROR, "No vehicle selected");
-        return false;
-    }
-
     std::string url(TESLA_API_URL_VEHICLE "/" + id + "/data_request/charge_state");
     std::string data;
 
@@ -74,7 +68,7 @@ bool show_charge_data(teslarc::Session *session)
     rapidjson::Value::ConstMemberIterator response = doc.MemberEnd();
 
     for (int retries = 10; (response == doc.MemberEnd() || !response->value.IsObject()) && retries >= 0; --retries, sleep(1)) {
-        printf("%s", retries == 10 ? "Waiting for response..." : ".");
+        printf("%s", retries == 10 ? "\033[1;32m[charge:INFO]\033[0m Waiting for response..." : ".");
         fflush(stdout);
 
         if (!util::oauth_get(url, session->access_token(), &data)) {
@@ -92,6 +86,8 @@ bool show_charge_data(teslarc::Session *session)
         response = doc.FindMember("response");
     }
 
+    printf("\n");
+
     if (response == doc.MemberEnd() || !response->value.IsObject()) {
         CHARGE_LOG(ERROR, "Unable to get a response from the vehicle");
         return false;
@@ -101,7 +97,7 @@ bool show_charge_data(teslarc::Session *session)
     rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
     response->value.Accept(writer);
 
-    printf("\n\n=======================================================\n");
+    printf("\n=======================================================\n");
     printf("  Charge Information:\n");
     printf("-------------------------------------------------------\n");
     printf("%s\n", buffer.GetString());
@@ -117,13 +113,11 @@ bool set_charge_limit(teslarc::Session *session, int argc, const char *argv[])
         return false;
     }
 
-    std::string id(session->id());
-
-    if (id.empty()) {
-        CHARGE_LOG(ERROR, "No vehicle selected");
+    if (!session->wake()) {
         return false;
     }
 
+    std::string id(session->id());
     int percentage = 0;
 
     try {
@@ -133,15 +127,65 @@ bool set_charge_limit(teslarc::Session *session, int argc, const char *argv[])
         return false;
     }
 
-    if (percentage < 0) {
-        CHARGE_LOG(INFO, "Percentage entered is under the minimum. Limiting to 0");
-        percentage = 0;
+    if (percentage < 50) {
+        CHARGE_LOG(INFO, "Percentage entered is under the minimum: Limiting to 50");
+        percentage = 50;
     } else if (percentage > 100) {
-        CHARGE_LOG(INFO, "Percentage entered is over the maximum. Limiting to 100");
+        CHARGE_LOG(INFO, "Percentage entered is over the maximum: Limiting to 100");
         percentage = 100;
     }
 
-    return true;
+    std::string url(TESLA_API_URL_VEHICLE "/" + id + "/command/set_charge_limit");
+    std::string fields("percent=" + std::to_string(percentage));
+    std::string data;
+
+    rapidjson::Document doc;
+    doc.SetObject();
+    rapidjson::Value::ConstMemberIterator response = doc.MemberEnd();
+
+    for (int retries = 10; (response == doc.MemberEnd() || !response->value.IsObject()) && retries >= 0; --retries, sleep(1)) {
+        printf("%s", retries == 10 ? "\033[1;32m[charge:INFO]\033[0m Waiting for response..." : ".");
+        fflush(stdout);
+
+        if (!util::oauth_post(url, session->access_token(), fields, &data)) {
+            CHARGE_LOG(ERROR, "Failed to set charge limit");
+            return false;
+        }
+
+        doc.Parse(data.c_str());
+
+        if (doc.HasParseError()) {
+            CHARGE_LOG(ERROR, "%s", GetParseError_En(doc.GetParseError()));
+            return false;
+        }
+
+        response = doc.FindMember("response");
+    }
+
+    printf("\n");
+
+    if (response == doc.MemberEnd() || !response->value.IsObject()) {
+        CHARGE_LOG(ERROR, "Unable to get a response from the vehicle");
+        return false;
+    }
+
+    rapidjson::Value::ConstMemberIterator result = response->value.GetObject().FindMember("result");
+    rapidjson::Value::ConstMemberIterator reason = response->value.GetObject().FindMember("reason");
+
+    if (result == response->value.GetObject().MemberEnd() || !result->value.IsBool()) {
+        CHARGE_LOG(ERROR, "Unable to get a proper result");
+        return false;
+    }
+
+    if (result->value.GetBool()) {
+        CHARGE_LOG(INFO, "Charge limit set to %d%%", percentage);
+    } else if (reason != response->value.GetObject().MemberEnd() && reason->value.IsString()) {
+        CHARGE_LOG(ERROR, "Failed with reason: %s", reason->value.GetString());
+    } else {
+        CHARGE_LOG(ERROR, "Failed with unknown reason");
+    }
+
+    return result->value.GetBool();
 }
 
 } // namespace internal

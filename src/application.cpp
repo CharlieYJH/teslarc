@@ -15,6 +15,15 @@ int run_once(teslarc::Session *session, int argc, const char *argv[])
 {
     const char *cmd = argv[0];
 
+    printf("\n=======================================================\n");
+    printf("  TeslaRC: Remote Tesla Controller\n");
+    printf("=======================================================\n\n");
+
+    // printf("\n  ======================================\n");
+    // printf("  *              TeslaRC:              *\n");
+    // printf("  *       Remote Tesla Controller      *\n");
+    // printf("  ======================================\n\n");
+
     if (!check_valid_command(cmd)) {
         fprintf(stderr, "Unknown command: %s\n", cmd);
         return 1;
