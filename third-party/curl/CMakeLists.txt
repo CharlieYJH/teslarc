@@ -12,7 +12,8 @@ set(
     FORCE
 )
 
-find_package(ZLIB)
+find_package(ZLIB REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 add_custom_command(
     OUTPUT ${EXTERN_CURL_INCLUDE_DIR}
@@ -41,6 +42,12 @@ add_custom_target(curl
 add_library(libcurl INTERFACE)
 add_dependencies(libcurl curl)
 target_include_directories(libcurl INTERFACE ${EXTERN_CURL_INCLUDE_DIR})
-target_link_libraries(libcurl INTERFACE ${EXTERN_CURL_LIBRARY_DIR} ${ZLIB_LIBRARIES} pthread ssl crypto)
+target_link_libraries(libcurl INTERFACE
+    ${EXTERN_CURL_LIBRARY_DIR}
+    ${ZLIB_LIBRARIES}
+    ${OPENSSL_SSL_LIBRARY}
+    ${OPENSSL_CRYPTO_LIBRARY}
+    pthread
+)
 
 append_third_party_library(libcurl)
