@@ -51,6 +51,18 @@ if [ ! -d "$BUILD_DIR" ]; then
     mkdir "$BUILD_DIR"
 fi
 
+if [ -x "$(command -v apt)" ]; then
+    if [ "$(id -u)" -eq 0 ]; then
+        echo "Apt is available on this system and user is root. Installing dependencies..."
+        apt -y install cmake libssl-dev zlib1g-dev
+    else
+        echo "User is not root, skipping package installations."
+    fi
+else
+    echo "Apt is not available on this system. Please install cmake, libssl-dev and zlib1g-dev manually."
+    exit 1
+fi
+
 cd "$BUILD_DIR" && cmake $CMAKE_BUILD_FLAG .. && make
 
 if [ ! -z "$INSTALL_BIN" ]; then
