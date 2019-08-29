@@ -22,3 +22,5 @@ target_link_libraries(${EXE_NAME} third_party)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(${EXE_NAME} PUBLIC TESLARC_DEBUG_ENABLED)
 endif()
+
+install(TARGETS ${EXE_NAME} DESTINATION "/usr/local/bin")
