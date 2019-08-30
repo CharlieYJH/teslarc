@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include "application.h"
 #include "module/charge.h"
 #include "util/log.h"
@@ -19,11 +21,6 @@ int run_once(teslarc::Session *session, int argc, const char *argv[])
     printf("  TeslaRC: Remote Tesla Controller\n");
     printf("=======================================================\n\n");
 
-    // printf("\n  ======================================\n");
-    // printf("  *              TeslaRC:              *\n");
-    // printf("  *       Remote Tesla Controller      *\n");
-    // printf("  ======================================\n\n");
-
     if (!check_valid_command(cmd)) {
         fprintf(stderr, "Unknown command: %s\n", cmd);
         return 1;
@@ -37,6 +34,15 @@ int run_once(teslarc::Session *session, int argc, const char *argv[])
     if (!session->query_current_vehicle()) {
         LOGGER(ERROR, "Failed to select a vehicle");
         return 1;
+    }
+
+    if (!session->wake()) {
+        LOGGER(ERROR, "Failed to wake vehicle");
+        return 1;
+    }
+
+    for (int retries = 10; !session->ping() && retries >= 0; --retries, sleep(1)) {
+        LOGGER(INFO, "Getting vehicle data...");
     }
 
     if (strcmp(cmd, "charge") == 0) {

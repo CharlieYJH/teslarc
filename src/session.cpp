@@ -11,7 +11,10 @@ namespace teslarc {
 
 Session::Session() :
     vidx_(0)
-{}
+{
+    vehicles_.SetObject();
+    vdata_.SetObject();
+}
 
 void Session::query_email()
 {
@@ -186,6 +189,43 @@ bool Session::wake() const
     return true;
 }
 
+bool Session::ping()
+{
+    std::string id(this->id());
+
+    if (id.empty()) {
+        return false;
+    }
+
+    std::string data;
+    std::string url(TESLA_API_URL_VEHICLE "/" + id + "/vehicle_data");
+
+    if (!util::oauth_get(url, access_token(), &data)) {
+        LOGGER(ERROR, "Failed to send vehicle data request");
+        return false;
+    }
+
+    rapidjson::Document doc;
+    doc.Parse(data.c_str());
+
+    if (doc.HasParseError()) {
+        LOGGER(ERROR, "%s", GetParseError_En(doc.GetParseError()));
+        return false;
+    }
+
+    rapidjson::Value::ConstMemberIterator response = doc.FindMember("response");
+
+    if (response == doc.MemberEnd() || !response->value.IsObject()) {
+        LOGGER(ERROR, "Invalid vehicle data response received");
+        return false;
+    }
+
+    rapidjson::Document::AllocatorType &alloc = vdata_.GetAllocator();
+    vdata_.CopyFrom(response->value, alloc);
+
+    return true;
+}
+
 const std::string &Session::email() const
 {
     return email_;
@@ -199,6 +239,11 @@ const std::string &Session::access_token() const
 const rapidjson::Document &Session::vehicles() const
 {
     return vehicles_;
+}
+
+const rapidjson::Document &Session::vehicle_data() const
+{
+    return vdata_;
 }
 
 const std::string Session::id() const

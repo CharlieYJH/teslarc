@@ -55,49 +55,19 @@ void print_help()
 
 bool show_charge_data(teslarc::Session *session)
 {
-    if (!session->wake()) {
-        return false;
-    }
+    const rapidjson::Document &data = session->vehicle_data();
+    rapidjson::Value::ConstMemberIterator charge_state = data.FindMember("charge_state");
 
-    std::string id(session->id());
-    std::string url(TESLA_API_URL_VEHICLE "/" + id + "/data_request/charge_state");
-    std::string data;
-
-    rapidjson::Document doc;
-    doc.SetObject();
-    rapidjson::Value::ConstMemberIterator response = doc.MemberEnd();
-
-    for (int retries = 10; (response == doc.MemberEnd() || !response->value.IsObject()) && retries >= 0; --retries, sleep(1)) {
-        printf("%s", retries == 10 ? "\033[1;32m[charge:INFO]\033[0m Waiting for response..." : ".");
-        fflush(stdout);
-
-        if (!util::oauth_get(url, session->access_token(), &data)) {
-            CHARGE_LOG(ERROR, "Failed to retrieve charge information");
-            return false;
-        }
-
-        doc.Parse(data.c_str());
-
-        if (doc.HasParseError()) {
-            CHARGE_LOG(ERROR, "%s", GetParseError_En(doc.GetParseError()));
-            return false;
-        }
-
-        response = doc.FindMember("response");
-    }
-
-    printf("\n");
-
-    if (response == doc.MemberEnd() || !response->value.IsObject()) {
-        CHARGE_LOG(ERROR, "Unable to get a response from the vehicle");
+    if (charge_state == data.MemberEnd() || !charge_state->value.IsObject()) {
+        CHARGE_LOG(ERROR, "Failed to retrieve charge information");
         return false;
     }
 
     rapidjson::StringBuffer buffer;
     rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(buffer);
-    response->value.Accept(writer);
+    charge_state->value.Accept(writer);
 
-    printf("\n=======================================================\n");
+    printf("=======================================================\n");
     printf("  Charge Information:\n");
     printf("-------------------------------------------------------\n");
     printf("%s\n", buffer.GetString());
@@ -139,30 +109,20 @@ bool set_charge_limit(teslarc::Session *session, int argc, const char *argv[])
     std::string fields("percent=" + std::to_string(percentage));
     std::string data;
 
-    rapidjson::Document doc;
-    doc.SetObject();
-    rapidjson::Value::ConstMemberIterator response = doc.MemberEnd();
-
-    for (int retries = 10; (response == doc.MemberEnd() || !response->value.IsObject()) && retries >= 0; --retries, sleep(1)) {
-        printf("%s", retries == 10 ? "\033[1;32m[charge:INFO]\033[0m Waiting for response..." : ".");
-        fflush(stdout);
-
-        if (!util::oauth_post(url, session->access_token(), fields, &data)) {
-            CHARGE_LOG(ERROR, "Failed to set charge limit");
-            return false;
-        }
-
-        doc.Parse(data.c_str());
-
-        if (doc.HasParseError()) {
-            CHARGE_LOG(ERROR, "%s", GetParseError_En(doc.GetParseError()));
-            return false;
-        }
-
-        response = doc.FindMember("response");
+    if (!util::oauth_post(url, session->access_token(), fields, &data)) {
+        CHARGE_LOG(ERROR, "Failed to set charge limit");
+        return false;
     }
 
-    printf("\n");
+    rapidjson::Document doc;
+    doc.Parse(data.c_str());
+
+    if (doc.HasParseError()) {
+        CHARGE_LOG(ERROR, "%s", GetParseError_En(doc.GetParseError()));
+        return false;
+    }
+
+    rapidjson::Value::ConstMemberIterator response = doc.FindMember("response");
 
     if (response == doc.MemberEnd() || !response->value.IsObject()) {
         CHARGE_LOG(ERROR, "Unable to get a response from the vehicle");
