@@ -83,10 +83,6 @@ bool set_charge_limit(teslarc::Session *session, int argc, const char *argv[])
         return false;
     }
 
-    if (!session->wake()) {
-        return false;
-    }
-
     std::string id(session->id());
     int percentage = 0;
 
